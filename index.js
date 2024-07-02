@@ -6,12 +6,15 @@ const { create, index, show, edit, destroy } = require('./src/bookStoreControlle
 const { createAccount, browse, seeDetails, addToCart, removeFromCart, purchaseBook } = require('./src/customerController')
 // Sample employee ID array;
 const employeeIdArr = require('./data/employeeData')
-const customers = require('./data/customerData')
+// const customerData = require('./data/customerData')
 
 function run(){
+
+    let bookstoreInventory = readJSONFile("./data", "bookstoreInventory.json")
+
     const isEmployee = verifyEmployee();
+
     if(isEmployee){
-        let bookstoreInventory = readJSONFile("./data", "bookstoreInventory")
         const employeeActions = ["Create Book", "List All Books", "Show Book", "Edit Book", "Delete Book"]
         const action = readlineSync.keyInSelect(employeeActions, "Select an action")
         let writeToFile = false;
@@ -37,14 +40,78 @@ function run(){
                 const updatedBook = {price, inStock, quantity, quantityAvailable: quantity}
                 updatedInventory = edit(bookstoreInventory, stockNumber, updatedBook)
                 writeToFile = true;
+                break;
             case 4 :
                 stockNumber = readlineSync.question("Please enter the stock number of book you wish to delete");
                 updatedInventory = destroy(bookstoreInventory, stockNumber);
                 writeToFile = true;
-                
+                break;
+        }
+
+        if(writeToFile){
+            writeJSONFile('./data', 'bookstoreInventory.json', updatedInventory);
         }
     } else {
 
+        let customers = readJSONFile("./data", "customerData.json")
+        let hasAccount = checkAccountStatus();
+
+        if(!hasAccount){
+           const wantsAccount = readlineSync.question("Would you like to create an account?")
+            if(wantsAccount){
+                const customerName = readlineSync.question("Please enter your name");
+                createAccount(customers, customerName);
+                hasAccount = true;
+                writeJSONFile("./data", "customerData.json", customers);
+            }
+        }
+
+        const customerId = readlineSync.question("Please enter your customer id");
+        const customerActions = ["Browse books", "See book details", "Add a book to cart", "Remove from cart", "Purchase book"]
+        const action = readlineSync.keyInSelect(customerActions, "What would you like to do?");
+        let writeToFile = false;
+        let updatedCustomers = [];
+
+        switch(action){
+            case 0 :
+                browse(bookstoreInventory);
+                break;
+            case 1 :
+                let stockNumber = readlineSync.question("Enter stock number of the book");
+                seeDetails(bookstoreInventory, stockNumber);
+                break;
+            case 2 :
+                if(hasAccount){
+                stockNumber = readlineSync.question("Enter stock number of the book");
+                updatedCustomers = addToCart(customers, customerId, bookstoreInventory, stockNumber);
+                writeToFile = true;
+                } else {
+                    inform("You must create an account to perform this action")
+                }
+                break;
+            case 3 :
+                if(hasAccount){
+                stockNumber = readlineSync.question("Enter stock number of the book");
+                updatedCustomers = removeFromCart(customers, customerId, stockNumber);
+                writeToFile = true;
+                } else {
+                    inform("You must create an account to perform this action")
+                }
+                break;
+            case 4 :
+                if(hasAccount){
+                stockNumber = readlineSync.question("Enter stock number of the book");
+                updatedCustomers = purchaseBook(customers, bookstoreInventory, customerId, stockNumber)
+                writeToFile = true;
+                } else {
+                    inform("You must create an account to perform this action")
+                }
+                break;
+        }
+
+        if(writeToFile){
+            writeJSONFile('./data', 'customerData.json', updatedCustomers);
+        }
     }
 }
 
@@ -72,7 +139,7 @@ const verifyEmployee = () => {
 
   // helper function to verify customer account
 
-  const checkAccountStatus = (customerData) => {
+  const checkAccountStatus = () => {
     const hasAccount = readlineSync.keyInYNStrict("Do you have an account? Press Y for Yes of N for No");
     if(hasAccount){
         const customerId = readlineSync.question("Please enter your customer ID");

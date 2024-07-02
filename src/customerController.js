@@ -56,20 +56,30 @@ const addToCart = (customerData, customerId, bookstoreInventory, stockNumber) =>
     }
 }
 
-const removeFromCart = (customerData, CustomerId, stockNumber) => {
-    const currentCustomer = findCustomer()
+const removeFromCart = (customerData, customerId, stockNumber) => {
+
+    const currentCustomer = findCustomer(customerData, customerId);
+    const cart = currentCustomer.shoppingCart;
+    targetBook = findBook(cart, stockNumber);
+
+    if(targetBook){
+        cart.splice(cart.indexOf(targetBook), 1);
+        inform(`${targetBook.title} successfully removed from your cart`);
+    } else {
+        inform(`${targetBook.title} not found in cart`);
+    }
 }
 
 const purchaseBook = (customerData, bookstoreInventory, customerId, stockNumber) => {
     const customer = findCustomer(customerData, customerId);
     const targetBook = findBook(shoppingCart, stockNumber);
-    const inventoryBook = findBook(bookstoreInventory, stockNumber);
-    inventoryBook.quantity && inventoryBook.quantity--;
-    inventoryBook.saleInfo && inventoryBook.saleInfo.quantityAvailable--;
 
     if(customer && targetBook) {
         const book = customer.shoppingCart.splice(shoppingCart.indexOf(targetBook), 1)
         customer.userLibrary.push(book);
+        
+        const inventoryBook = findBook(bookstoreInventory, stockNumber);
+        inventoryBook.saleInfo.quantityAvailable && inventoryBook.saleInfo.quantityAvailable--;
         inform(`Purchase successful, ${targetBook.title} added to your library!`)
         return customerData;
     } else if(!customer){
