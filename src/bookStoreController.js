@@ -37,15 +37,17 @@ const create = (bookstoreInventory) => {
                 inform(`${foundBook.title} already exists. Quantity incremented`);
             } else {
                     
+                let quantity = 1
                 newBook = {
                     id: nanoid(4),
                     title,
                     author,
                     publisher,
                     publishedDate,
-                    price,
-                    quantity: 1,
-                    inStock : newBook.quantity > 0 ? "Yes": "No"
+                    saleInfo: {price,
+                    quantity,
+                    },
+                    inStock : quantity > 0 ? "Yes": "No"
                 }
             
                 bookstoreInventory.push(newBook);
@@ -139,10 +141,12 @@ const show = (inventory, stockNumber) => {
 };
 
 const edit = (inventory, stockNumber, updatedBook) => {
+
     const index = inventory.findIndex(book => book.stockNumber === stockNumber)
+
     if(index > -1){
         const { price, inStock, quantity, quantityAvailable} = updatedBook
-        inventory[index].price = price;
+        inventory[index].saleInfo.price = price;
         if(quantity && inventory[index].quantity){
             inventory[index].quantity = quantity;
         }

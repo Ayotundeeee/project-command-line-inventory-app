@@ -1,17 +1,18 @@
 const inform = console.log;
 const { nanoid } = require('nanoid');
-const { create, index, destroy, edit, show } = require('./src/bookStoreController')
 const readlineSync = require('readline-sync')
 const { readJSONFile, writeJSONFile } = require('./src/helpers')
+const { create, index, show, edit, destroy } = require('./src/bookStoreController')
 const { createAccount, browse, seeDetails, addToCart, removeFromCart, purchaseBook } = require('./src/customerController')
 // Sample employee ID array;
 const employeeIdArr = require('./data/employeeData')
+const customers = require('./data/customerData')
 
 function run(){
-    const isEmployee = verifyEmployee;
+    const isEmployee = verifyEmployee();
     if(isEmployee){
         let bookstoreInventory = readJSONFile("./data", "bookstoreInventory")
-        const employeeActions = ["Create Book", "List All Books", "Show Book", "Edit Book", "Destroy Book"]
+        const employeeActions = ["Create Book", "List All Books", "Show Book", "Edit Book", "Delete Book"]
         const action = readlineSync.keyInSelect(employeeActions, "Select an action")
         let writeToFile = false;
         let updatedInventory = [];
@@ -25,12 +26,25 @@ function run(){
                 index(bookstoreInventory);
                 break;
             case 2 :
-                const stockNumber = readlineSync.question("Please enter stock number: ")
+                let stockNumber = readlineSync.question("Please enter stock number: ")
                 show(bookstoreInventory, stockNumber)
                 break;
             case 3 :
+                stockNumber = readlineSync.question("Please enter stock number: ");
+                const price = readlineSync.question("What is the new Price ?");
+                const inStock = readlineSync.keyInYNStrict("Is it in stock? Select Y for Yes or N for No");
+                const quantity = readlineSync.question("How many copies are available?")
+                const updatedBook = {price, inStock, quantity, quantityAvailable: quantity}
+                updatedInventory = edit(bookstoreInventory, stockNumber, updatedBook)
+                writeToFile = true;
+            case 4 :
+                stockNumber = readlineSync.question("Please enter the stock number of book you wish to delete");
+                updatedInventory = destroy(bookstoreInventory, stockNumber);
+                writeToFile = true;
                 
         }
+    } else {
+
     }
 }
 
@@ -39,7 +53,9 @@ run();
 
 // helper function to verify if employee.
 const verifyEmployee = () => {
+
     const isEmployee = readlineSync.keyInYNStrict("Are you an employee? Press Y for Yes or N for No");
+
     if (isEmployee){
       const employeeId = readlineSync.question("Please enter your employee ID");
       if(employeeIdArr.includes(employeeId)){
@@ -52,11 +68,11 @@ const verifyEmployee = () => {
       inform("Please choose from customer options")
       return false;
     }
-  }
+}
 
   // helper function to verify customer account
 
-  const checkAccountStatus = () => {
+  const checkAccountStatus = (customerData) => {
     const hasAccount = readlineSync.keyInYNStrict("Do you have an account? Press Y for Yes of N for No");
     if(hasAccount){
         const customerId = readlineSync.question("Please enter your customer ID");
