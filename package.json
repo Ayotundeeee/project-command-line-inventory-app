@@ -1,0 +1,25 @@
+{
+  "name": "project-command-line-inventory-app",
+  "version": "1.0.0",
+  "description": "Bringing together all you've learned so far, about JavaScript and building applications, build a Command-line Inventory Application. It will be an application where employees can keep track of the inventory of a store. Employees can create new items, update items, see a list of items, see details of one item and delete items. Your application should choose a particular resource or theme and be named appropriately.",
+  "main": "index.js",
+  "scripts": {
+    "index": "node index.js index",
+    "create": "node index.js create",
+    "show": "node index.js show",
+    "update": "node index.js update",
+    "destroy": "node index.js destroy",
+    "manageCart": "node index.js manageCart",
+    "add": "node index.js addtoCart",
+    "remove": "node index.js removeFromCart",
+    "buy": "node index.js purchaseBook"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "nanoid": "^3.3.7",
+    "readline-sync": "^1.4.10"
+  }
+}
